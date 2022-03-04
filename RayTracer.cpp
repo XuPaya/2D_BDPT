@@ -28,7 +28,7 @@ using namespace std;
 #define IMG_HEIGHT 461
 //#define IMG_WIDTH 178
 //#define IMG_HEIGHT 100
-#define SAMPLE_PER_PIXEL 30
+#define SAMPLE_PER_PIXEL 128
 #define MAX_DEPTH 10
 
 
