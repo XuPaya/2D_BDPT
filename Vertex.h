@@ -6,6 +6,11 @@
 
 enum class VertexType { Camera, Light, Surface };
 
+struct DiffContainer {
+    vec2 dFGdx = vec2(0.0);
+    vec2 dxdtheta = vec2(0.0);
+};
+
 class Vertex {
 public:
 	vec2 pos;
@@ -86,10 +91,10 @@ public:
         vec2 wo = (prev.p() - p()).normalized();
         if (wi.length() < 1e-10)
         {
-            return 0.0;
+            return vec3(0.0);
         }
         wi = wi.normalized();
-        if (obj == nullptr) { return 0.0; }
+        if (obj == nullptr) { return vec3(0.0); }
         return obj->mat->bsdf(wo, wi);
     }
 
@@ -99,6 +104,108 @@ public:
     }
 
     vec3 We(const Vertex& next) const {
-        return 1.0;
+        return vec3(1.0);
     }
+
+};
+
+
+class aVertex {
+public:
+    DiffContainer buffer;
+    vec2 pos;
+    aVec2 ad_pos;
+    double pdfFwd = 0, pdfRev = 0;
+    Object* obj;
+    vec2 normal;
+    VertexType type;
+    vec2& p() { return pos; }
+    vec2& n() { return normal; }
+
+    double ConvertDensity(double pdf, aVertex& next) {
+        vec2 w = next.p() - p();
+        if (w.length() <= 1e-10)
+            return 0.0;
+        double invDist = 1.0 / w.length();
+        if (next.type != VertexType::Camera) {
+            pdf *= abs(dot(next.n(), w.normalized()));
+        }
+        return pdf * invDist;
+    }
+
+    double Pdf(Scene& scene, aVertex* prev,
+        aVertex& next) {
+        if (type == VertexType::Light)
+            return PdfLight(scene, next);
+        if (type == VertexType::Camera) {
+            return ConvertDensity(1.0, next);
+        }
+        vec2 wp, wn = (next.p() - p()).normalized();
+        if (prev)
+            wp = (prev->p() - p()).normalized();
+        double pdf;
+        pdf = obj->mat->pdf(wp, wn);
+        //if (type == VertexType::Camera)
+        //    ei.camera->Pdf_We(ei.SpawnRay(wn), &unused, &pdf);
+        //else if (type == VertexType::Surface)
+        //    pdf = si.bsdf->Pdf(wp, wn);
+        //else if (type == VertexType::Medium)
+        //    pdf = mi.phase->p(wp, wn);
+
+
+        return ConvertDensity(pdf, next);
+
+    }
+
+    double PdfLightOrigin(const Scene& scene, const aVertex& v) const {
+        //// << Return solid angle density for non - infinite light sources >>
+        //double pdfPos, pdfDir, pdfChoice = 1;
+        ////<< Get pointer light to the light source at the vertex >>
+        //const AreaLight * light = (AreaLight*)obj;
+        //light.mat->Pdf_Le(Ray(p(), w, time()), ng(), &pdfPos, &pdfDir);
+        return 1.0 / (0.4);
+
+    }
+
+    double PdfLight(Scene& scene, aVertex& v) {
+        vec2 w = v.p() - p();
+        double invDist = 1 / w.length();
+        w = w.normalized();
+        double pdf;
+        // << Get pointer light to the light source at the vertex >>
+        const LightMaterial* light = (LightMaterial*)(obj->mat);
+
+
+        // << Compute sampling density for non - infinite light sources >>
+        vec2 n = vec2(1.0, 0.0);
+        vec2 tan = vec2(-n[1], n[0]);
+        vec2 wLocal = vec2(dot(w, tan), dot(w, n));
+        double pdfDir = light->Pdf_Le(wLocal.normalized());
+        pdf = pdfDir * invDist;
+
+        pdf *= abs(dot(v.n(), w));
+        return pdf;
+    }
+
+    vec3 f(aVertex& prev, aVertex& next) {
+        vec2 wi = (next.p() - p());
+        vec2 wo = (prev.p() - p()).normalized();
+        if (wi.length() < 1e-10)
+        {
+            return vec3(0.0);
+        }
+        wi = wi.normalized();
+        if (obj == nullptr) { return vec3(0.0); }
+        return obj->mat->bsdf(wo, wi);
+    }
+
+    vec3 Le(aVertex& next) {
+        vec2 w = (next.p() - p()).normalized();
+        return ((LightMaterial*)(obj->mat))->Le(w);
+    }
+
+    vec3 We(const aVertex& next) const {
+        return vec3(1.0);
+    }
+
 };

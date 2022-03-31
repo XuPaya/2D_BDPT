@@ -8,7 +8,7 @@ using std::sqrt;
 class vec3 {
 public:
     vec3() : e{ 0,0,0 } {}
-    vec3(double x) : e{ x, x, x } {}
+    explicit vec3(double x) : e{ x, x, x } {}
     vec3(double e0, double e1, double e2) : e{ e0, e1, e2 } {}
 
     double x() const { return e[0]; }
@@ -62,7 +62,7 @@ public:
 class vec2 {
 public:
     vec2() : e{ 0,0 } {}
-    vec2(double x) : e{ x, x } {}
+    explicit vec2(double x) : e{ x, x } {}
     vec2(double e0, double e1) : e{ e0, e1} {}
 
     double x() const { return e[0]; }
@@ -136,6 +136,10 @@ inline vec2 operator*(const vec2 &v, double t) {
 
 inline vec2 operator/(vec2 v, double t) {
     return (1/t) * v;
+}
+
+inline double operator/(vec2 u, vec2 v) {
+    return u.e[0] / v.e[0] + u.e[1] / v.e[1];
 }
 
 inline double dot(const vec2 &u, const vec2 &v) {

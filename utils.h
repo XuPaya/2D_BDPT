@@ -15,7 +15,7 @@ double max(double a, double b) {
 
 
 double uniform() {
-	return (double)rand() / RAND_MAX;
+	return (double)rand() / ((double)RAND_MAX + 1);
 }
 
 double clamp(double x, double xmin, double xmax) {

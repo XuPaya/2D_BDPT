@@ -26,7 +26,7 @@ public:
 		return vec2(x, -y * sign(wi[1]));
 	}
 	virtual vec3 bsdf(vec2 wi, vec2 wo) {
-		return 0.3;
+		return vec3(0.3);
 	}
 	virtual double pdf(vec2 wi, vec2 wo) {
 		return 1.0 / M_PI;
@@ -48,33 +48,18 @@ public:
 		return vec2(x, -y * sign(wi[1]));
 	}
 	virtual vec3 bsdf(vec2 wi, vec2 wo) {
-		return 0.3;
+		return vec3(0.3);
 	}
 	virtual double pdf(vec2 wi, vec2 wo) {
 		return 1.0 / M_PI;
 	}
 	vec3 Le(vec2 wi) {
 		// if (abs(wi[1]) == 0) return 0.0;
-		return 2.2;
+		return vec3(2.2);
 	}
 	double Pdf_Le(vec2 wi) const {
 		return 1.0 / M_PI;
 	}
 };
 
-class Camera : public Material {
-public:
-	virtual vec2 sample(vec2 wi) {
-		double theta = uniform() * 2.0 * M_PI;
-		double x = cos(theta);
-		double y = sin(theta);
-		return vec2(x, y);
-	}
-	virtual vec3 bsdf(vec2 wi, vec2 wo) {
-		return 1.0;
-	}
-	virtual double pdf(vec2 wi, vec2 wo) { // returns
-		return abs(wi[1]) / 2.0;
-	}
-};
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "vec.h"
+#include "avec.h"
 class Ray
 {
 public:
@@ -9,5 +10,14 @@ public:
 	vec2 at(double t) {
 		return origin + dir * t;
 	}
+};
+
+class aRay
+{
+public:
+	aRay(aVec2 ori, aVec2 d): origin(ori), dir(d){}
+	aRay(Ray r) : origin(r.origin), dir(r.dir) {}
+	aVec2 origin;
+	aVec2 dir;
 };
 
